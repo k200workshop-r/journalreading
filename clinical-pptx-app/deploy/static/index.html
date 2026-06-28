@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Journal Reading → 院內模板簡報</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+  :root{
+    --bg1:#fbf7ef; --bg2:#efeae0; --card:#ffffff; --ink:#3a342e; --muted:#8a8073;
+    --line:#e7e0d4; --clay:#b06b3f; --clay-d:#965729; --sage:#6f7d5e; --sage-d:#5b6a4c;
+    --sand:#f3ece0; --amber:#caa05a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    color:var(--ink);background:linear-gradient(180deg,var(--bg1),var(--bg2));min-height:100vh}
+  .wrap{max-width:720px;margin:0 auto;padding:22px 16px 60px}
+  header{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+  .logo{width:42px;height:42px;border-radius:13px;background:var(--clay);display:flex;align-items:center;
+    justify-content:center;color:#fff;font-size:20px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  h1{font-size:19px;margin:0;line-height:1.25}
+  .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(60,50,40,.04)}
+  .eyebrow{font-size:11.5px;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;
+    margin-bottom:9px}
+  .drop{border:2px dashed var(--line);border-radius:14px;padding:26px 14px;text-align:center;cursor:pointer;
+    transition:.15s;background:#fffdf9}
+  .drop:hover{border-color:var(--clay);background:#fdf6ee}
+  .drop.on{border-color:var(--sage);background:#f4f6ef}
+  .drop .big{font-size:15px;font-weight:600}
+  .drop .small{font-size:12px;color:var(--muted);margin-top:3px}
+  label.fld{display:block;font-size:12.5px;font-weight:600;color:#6b6358;margin:0 0 6px}
+  select,input[type=text],input[type=number]{width:100%;padding:10px 12px;border:1px solid var(--line);
+    border-radius:10px;font-size:14px;color:var(--ink);background:#fff;font-family:inherit}
+  select:focus,input:focus{outline:none;border-color:var(--clay);box-shadow:0 0 0 3px rgba(176,107,63,.12)}
+  .grid{display:grid;gap:14px}
+  @media(min-width:560px){.grid.two{grid-template-columns:1fr 1fr}}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border:1px solid var(--line);
+    border-radius:999px;font-size:13.5px;font-weight:500;cursor:pointer;background:#fff;color:#6b6358;user-select:none}
+  .chip.on{background:var(--sage);border-color:var(--sage);color:#fff}
+  .chip .box{width:15px;height:15px;border:1px solid #cfc7b8;border-radius:4px;display:flex;align-items:center;
+    justify-content:center;font-size:11px;background:#fff;color:transparent}
+  .chip.on .box{background:rgba(255,255,255,.25);border-color:#fff;color:#fff}
+  .seg{display:inline-flex;background:var(--sand);border-radius:10px;padding:3px;gap:2px}
+  .seg button{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:13.5px;font-weight:600;
+    color:#7c7264;cursor:pointer;font-family:inherit}
+  .seg button.on{background:var(--clay);color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+  .hint{font-size:11px;color:var(--muted);margin-top:5px}
+  .warn{font-size:11px;color:var(--clay-d);margin-top:5px}
+  .go{width:100%;padding:15px;border:0;border-radius:14px;background:var(--clay);color:#fff;font-size:15px;
+    font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(176,107,63,.25)}
+  .go:hover{background:var(--clay-d)} .go:disabled{background:#cdc4b6;box-shadow:none;cursor:not-allowed}
+  .note{font-size:12px;color:var(--muted);text-align:center;margin-top:9px}
+  .err{background:#fcf2e8;border:1px solid #ecd6bf;color:#8a5a2b;border-radius:12px;padding:12px 14px;
+    font-size:13.5px;margin-bottom:14px}
+  .ok{background:#f1f5ec;border:1px solid #d9e3cd;color:#4f5e3e;border-radius:12px;padding:12px 14px;
+    font-size:13.5px;margin-bottom:14px}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;
+    border-radius:50%;animation:r .8s linear infinite;vertical-align:-3px;margin-right:7px}
+  @keyframes r{to{transform:rotate(360deg)}}
+  footer{text-align:center;font-size:11px;color:var(--muted);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">✚</div>
+    <div>
+      <h1>Journal Reading → 院內模板簡報</h1>
+      <div class="sub">上傳論文 · 依科別整理重點 · 一鍵產生套用院內模板的 PowerPoint</div>
+    </div>
+  </header>
+
+  <div id="msg"></div>
+
+  <div class="card">
+    <div class="eyebrow">論文 / 期刊（PDF）</div>
+    <div class="drop" id="drop">
+      <div class="big" id="dropBig">點擊或拖曳 PDF 到這裡</div>
+      <div class="small" id="dropSmall">含可選取文字的 PDF</div>
+    </div>
+    <input type="file" id="file" accept="application/pdf" style="display:none" />
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">科別與報告者</div>
+    <div class="grid two">
+      <div>
+        <label class="fld">科別</label>
+        <select id="specialty"></select>
+      </div>
+      <div>
+        <label class="fld">報告者（選填）</label>
+        <input type="text" id="reporter" placeholder="例如：王小明" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">簡報設定</div>
+    <div class="grid two">
+      <div>
+        <label class="fld">投影片張數</label>
+        <input type="number" id="slideCount" min="4" max="40" value="15" />
+        <div class="hint">院內模板自產，張數不受 NotebookLM 限制</div>
+        <div class="warn" id="scWarn" style="display:none"></div>
+      </div>
+      <div>
+        <label class="fld">語言</label>
+        <div class="seg" id="langSeg"></div>
+        <label class="fld" style="margin-top:12px">風格</label>
+        <div class="seg" id="styleSeg"></div>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <label class="fld">對象（可複選）</label>
+      <div class="chips" id="audChips"></div>
+    </div>
+    <div style="margin-top:14px">
+      <label class="fld">著重方向（選填）</label>
+      <input type="text" id="focus" placeholder="例如：聚焦在臨床處置與決策流程" />
+    </div>
+  </div>
+
+  <button class="go" id="go" disabled>產生院內模板簡報（.pptx）</button>
+  <div class="note" id="goNote">請先上傳 PDF · 北醫附醫教學部使用</div>
+  <footer>北醫附醫教學部使用 · 內容由 AI 生成，臨床決策請以原始文獻與臨床判斷為準。</footer>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const SPECIALTIES = ["內科部","外科部","皮膚科","耳鼻喉科","泌尿科","放射腫瘤科","安寧緩和科",
+  "影像醫學部","復健醫學部","婦產科","小兒科","神經外科","神經內科","急診醫學科","骨科部","家庭醫學科"];
+const LANGS = ["中文","English","中英對照"];
+const STYLES = ["詳細版","簡報版"];
+const AUDS = ["主治醫師","住院醫師","PGY","實習醫學生"];
+
+let paperText = "", lang = "中文", style = "詳細版", auds = new Set(["住院醫師"]);
+
+const $ = s => document.querySelector(s);
+const msg = $("#msg");
+function showMsg(t, cls){ msg.innerHTML = t ? `<div class="${cls}">${t}</div>` : ""; }
+
+// specialty
+const sel = $("#specialty");
+SPECIALTIES.forEach(s=>{const o=document.createElement("option");o.textContent=s;sel.appendChild(o);});
+
+// segmented
+function seg(el, opts, get, set){
+  el.innerHTML="";
+  opts.forEach(o=>{const b=document.createElement("button");b.textContent=o;
+    b.className=get()===o?"on":"";
+    b.onclick=()=>{set(o);[...el.children].forEach(c=>c.className=c.textContent===o?"on":"");};
+    el.appendChild(b);});
+}
+seg($("#langSeg"),LANGS,()=>lang,v=>lang=v);
+seg($("#styleSeg"),STYLES,()=>style,v=>style=v);
+
+// audience chips
+const audEl = $("#audChips");
+AUDS.forEach(a=>{
+  const c=document.createElement("div");
+  c.className="chip"+(auds.has(a)?" on":"");
+  c.innerHTML=`<span class="box">✓</span>${a}`;
+  c.onclick=()=>{auds.has(a)?auds.delete(a):auds.add(a);
+    c.className="chip"+(auds.has(a)?" on":"");};
+  audEl.appendChild(c);
+});
+
+// slide count warning (only informational; no hard cap here)
+$("#slideCount").addEventListener("input",e=>{
+  const n=+e.target.value; const w=$("#scWarn");
+  if(n>30){w.style.display="block";w.textContent="超過 30 張內容可能偏稀，建議 15–25 張。";}
+  else w.style.display="none";
+});
+
+// file -> extract text
+const drop=$("#drop"), fileInput=$("#file");
+drop.onclick=()=>fileInput.click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add("on");};
+drop.ondragleave=()=>drop.classList.remove("on");
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove("on");handleFile(e.dataTransfer.files[0]);};
+fileInput.onchange=e=>handleFile(e.target.files[0]);
+
+async function handleFile(f){
+  if(!f) return;
+  if(f.type!=="application/pdf"){showMsg("請上傳 PDF 檔案。","err");return;}
+  showMsg("");
+  $("#dropBig").innerHTML='<span class="spin" style="border-color:#b06b3f;border-top-color:transparent"></span>正在擷取 PDF 文字…';
+  $("#dropSmall").textContent=f.name;
+  try{
+    const buf=await f.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    let t="";
+    for(let i=1;i<=pdf.numPages;i++){
+      const pg=await pdf.getPage(i);
+      const c=await pg.getTextContent();
+      t+=c.items.map(it=>it.str).join(" ")+"\n\n";
+    }
+    paperText=t.trim();
+    if(paperText.length<200){
+      paperText="";
+      $("#dropBig").textContent="點擊或拖曳 PDF 到這裡";
+      $("#dropSmall").textContent="含可選取文字的 PDF";
+      showMsg("這份 PDF 幾乎讀不到文字（可能是掃描檔），請改用含文字的 PDF 或先做 OCR。","err");
+    }else{
+      drop.classList.add("on");
+      $("#dropBig").textContent="✓ "+f.name;
+      $("#dropSmall").textContent=pdf.numPages+" 頁 · 已擷取文字，點擊可重選";
+    }
+  }catch(err){
+    paperText="";
+    $("#dropBig").textContent="點擊或拖曳 PDF 到這裡";
+    $("#dropSmall").textContent="含可選取文字的 PDF";
+    showMsg("讀取 PDF 失敗："+(err.message||err),"err");
+  }
+  refresh();
+}
+
+function refresh(){
+  const ok=paperText.length>=200;
+  $("#go").disabled=!ok;
+  $("#goNote").style.display=ok?"none":"block";
+}
+
+// generate
+$("#go").onclick=async()=>{
+  if(paperText.length<200) return;
+  if(auds.size===0){showMsg("請至少勾選一個對象。","err");return;}
+  const btn=$("#go");
+  btn.disabled=true; const old=btn.textContent;
+  btn.innerHTML='<span class="spin"></span>產生中…（依張數約需 20–60 秒）';
+  showMsg("");
+  try{
+    const res=await fetch("/api/generate",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        paperText, specialty:sel.value, reporter:$("#reporter").value.trim(),
+        audiences:[...auds].join("、"), language:lang, deckStyle:style,
+        slideCount:+$("#slideCount").value, focusNote:$("#focus").value.trim()
+      })
+    });
+    if(!res.ok){
+      let e="產生失敗"; try{e=(await res.json()).error||e;}catch{}
+      throw new Error(e);
+    }
+    const blob=await res.blob();
+    const cd=res.headers.get("Content-Disposition")||"";
+    let name="JournalReading.pptx";
+    const star=cd.match(/filename\*=UTF-8''([^;]+)/i);
+    const plain=cd.match(/filename="?([^";]+)"?/i);
+    if(star) name=decodeURIComponent(star[1]);
+    else if(plain) name=plain[1];
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();
+    a.remove();URL.revokeObjectURL(url);
+    showMsg("✓ 簡報已產生並開始下載："+name,"ok");
+  }catch(err){
+    showMsg("產生失敗："+(err.message||err),"err");
+  }finally{
+    btn.disabled=false; btn.textContent=old; refresh();
+  }
+};
+</script>
+</body>
+</html>
