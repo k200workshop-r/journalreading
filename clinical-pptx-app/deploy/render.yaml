@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: clinical-paper-pptx
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --timeout 200
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false   # 部署後在 Render 後台手動填入，不要寫進程式或 git
+      - key: PYTHON_VERSION
+        value: "3.12.4"
